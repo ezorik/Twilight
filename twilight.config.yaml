@@ -7,7 +7,7 @@ site:
     # 站点副标题
     subtitle: "Ezorin's Personal Space"
     # 语言配置
-    lang: "en"
+    lang: "zh-TW"
     # 翻译配置
     translate:
         # 启用翻译功能
@@ -44,11 +44,11 @@ site:
         # 主题色的默认色相 (范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345)
         hue: 255
     # 默认主题 ("system" 跟随系统 | "light" 浅色 | "dark" 深色)
-    defaultTheme: "dark"
+    defaultTheme: "light"
     # 壁纸配置
     wallpaper:
         # 模式 ("banner" 横幅 | "fullscreen" 全屏 | "none" 纯色)
-        mode: "banner"
+        mode: "fullscreen"
         # 图片源配置 (fullscreen 和 banner 模式共享)
         src:
             # 桌面壁纸图片 (相对于 /public 目录; 支持单张图片或图片数组，当数组长度 > 1 时自动启用轮播)
@@ -174,7 +174,7 @@ navbar:
             "Archive"
         - # 一级导航链接 - 展览 (自定义)
             # 导航名称
-            name: "Exhibition"
+            name: "展覽"
             # 导航链接
             url: "/exhibition/"
             # 导航图标
