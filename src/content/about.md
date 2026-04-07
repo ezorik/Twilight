@@ -9,7 +9,7 @@
 * 喜欢折腾各种有趣的项目
 
 ## 🌟 我的爱好
-* 听音乐（特别喜欢某某风格）
+* 听音乐
 * 看番剧、玩游戏...
 * ...
 
@@ -17,5 +17,3 @@
 * **GitHub**: [ezorik](https://github.com/ezorik)
 * **Email**: zaooen@qq.com
 
----
-> "Illuminate Our Paths"
