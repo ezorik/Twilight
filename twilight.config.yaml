@@ -183,12 +183,12 @@ navbar:
             description: "A collection of my creative works and experiences"
             # 子链接
             children:
-                - # 二级导航链接 - 项目 (预设)
-                    "Projects"
-                - # 二级导航链接 - 技能 (预设)
-                    "Skills"
-                - # 二级导航链接 - 历程 (预设)
-                    "Timeline"
+                # - # 二级导航链接 - 项目 (预设)
+                #     "Projects"
+                # - # 二级导航链接 - 技能 (预设)
+                #     "Skills"
+                # - # 二级导航链接 - 历程 (预设)
+                #     "Timeline"
                 - # 二级导航链接 - 日记 (预设)
                     "Diary"
                 - # 二级导航链接 - 相册 (预设)
