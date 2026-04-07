@@ -1,0 +1,232 @@
+---
+title: '主题：新增完全独立板块'
+published: '2026-04-08'
+pinned: true
+description: '关于对Fork仓库同步与冲突解决'
+#cover: 'https://t.alcy.cc/pc'
+tags: ["Github", "blog"]
+category: Github
+draft: false
+---
+
+***
+
+```markdown
+# 🛠️ Twilight 主题：新增完全独立板块（标准操作流程 SOP）
+
+> **说明**：本指南用于在 Astro Twilight 主题中，建立一个完全不与主博客（posts）冲突、拥有独立路由、独立数据源和独立时间线的新板块。
+> *以下示例以新增 `notes`（随笔）板块为例。如果你想新增 `food` 或 `projects`，只需将文中所有的 `notes` 替换为你的新名称即可。*
+
+---
+
+## 🌟 第一步：注册独立数据源 (底层配置)
+
+**目标**：告诉 Astro 系统有这个新板块，并规定里面文章的格式要求。
+**操作文件**：`src/content.config.ts`
+
+1. 找到原有 `postsCollection` 的定义。
+2. 在其下方，新增你的独立集合定义代码：
+
+```typescript
+import { defineCollection, z } from "astro:content";
+import { glob } from 'astro/loaders';
+// ... (保留原有的其他 import 和 postsCollection 定义)
+
+// 👇 新增：定义你的新集合 (以 notes 为例)
+const notesCollection = defineCollection({
+    // [关键] loader 决定了去哪个文件夹抓取 markdown 文件
+    loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: "./src/content/notes" }),
+    
+    // schema 定义了 md 文件头部可以/必须写哪些参数
+    // 为了省事和统一，直接完全照抄 posts 的 schema
+    schema: z.object({
+        title: z.string(),
+        published: z.date(), // 实际项目里你这里用的可能是 dateSchema，照抄你原本的即可
+        updated: z.date().optional(),
+        description: z.string().optional().default(""),
+        cover: z.string().optional().default(""),
+        coverInContent: z.boolean().optional().default(false),
+        category: z.string().optional(),
+        tags: z.array(z.string()).optional().default([]),
+        // ... (把你原来 posts 集合里的一长串 schema 完整贴在这里)
+    }),
+});
+
+// 👇 关键：把新集合挂载到系统导出总线上
+export const collections = {
+    posts: postsCollection,
+    // ... 其他原有的集合
+    notes: notesCollection, // <-- 必须加上这行！全站才能读取到
+};
+```
+
+---
+
+## 📁 第二步：建立独立存储 (数据存放)
+
+**目标**：存放真实的 Markdown 文章内容。
+**操作位置**：项目资源管理器
+
+1. 在 `src/content/` 目录下，新建一个与你在配置里同名的文件夹：`src/content/notes/`。
+2. 在里面新建你的 `.md` 文件。
+3. **⚠️ 避坑检查**：确保 `.md` 文件的头部（Frontmatter）必须包含基础信息，尤其是 `title` 和 `published`：
+
+```markdown
+---
+title: "我的第一篇随笔"
+published: 2026-04-07
+description: "这是一段测试描述"
+---
+
+这里是正文内容...
+```
+
+---
+
+## 🖥️ 第三步：建立独立路由与页面 (核心防冲突机制)
+
+**目标**：生成独立的网址，并彻底避开原主题强行跳转 `/posts/` 的组件黑盒。
+**操作位置**：`src/pages/` 目录
+
+🚨 **绝对避坑指南**：
+* **禁止**在 `src/pages/` 根目录下建立名叫 `notes.astro` 的文件，会导致路由冲突！
+* **禁止**在新页面里使用 `<PostPage>` 或 `<ArchivePanel>` 组件，它们内部写死了会自动加 `/posts/` 前缀。
+
+**正确操作**：在 `src/pages/` 下新建一个文件夹 `notes`，并在里面创建以下**两个**文件：
+
+### 1. 列表与翻页页：`src/pages/notes/[...page].astro`
+
+> 使用“手动渲染时间线”方案，保证链接 100% 准确。
+
+```astro
+---
+export const prerender = true;
+import type { GetStaticPaths } from "astro";
+import { getCollection } from "astro:content";
+import { PAGE_SIZE } from "@constants/constants";
+import GridLayout from "@layouts/grid.astro";
+import BackwardButton from "@components/backwardButton.astro";
+import Pagination from "@components/pagination.astro";
+
+// 1. 抓取并按时间倒序
+export const getStaticPaths = (async ({ paginate }) => {
+    const allNotes = await getCollection("notes"); // <-- 记得改集合名称
+    const sortedNotes = allNotes.sort((a, b) => 
+        b.data.published.valueOf() - a.data.published.valueOf()
+    );
+    return paginate(sortedNotes, { pageSize: PAGE_SIZE });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const formatMonthDay = (date: Date) => {
+  return new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit' }).format(date);
+};
+---
+
+<GridLayout title="Notes" description="随笔与日常记录">
+    <div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
+        <div class="card-base z-10 px-9 py-6 relative w-full ">
+            <BackwardButton currentPath={Astro.url.pathname} />
+            
+            <header class="mb-12">
+                <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">Notes</h1>
+                <p class="text-neutral-600 dark:text-neutral-400">随笔与日常记录</p>
+            </header>
+
+            <div class="relative ml-4 md:ml-8 border-l-2 border-black/5 dark:border-white/5 pb-8">
+                {page.data.map((note) => {
+                    const pureId = note.id.replace(/\.[^/.]+$/, "");
+                    const date = new Date(note.data.published);
+                    return (
+                        <div class="mb-10 ml-6 relative">
+                            <div class="absolute -left-[33px] top-1.5 w-4 h-4 rounded-full bg-white dark:bg-zinc-900 border-2 border-(--primary) z-10"></div>
+                            {/* 👇 强制写死绝对路径，彻底杜绝跳回 posts */}
+                            <a href={`/notes/${pureId}/`} class="block transition-all group"> 
+                                <div class="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6">
+                                    <span class="text-sm font-mono text-black/30 dark:text-white/30 whitespace-nowrap">
+                                        {formatMonthDay(date)}
+                                    </span>
+                                    <h2 class="text-xl font-bold text-black/80 dark:text-white/80 group-hover:text-(--primary) transition-colors">
+                                        {note.data.title}
+                                    </h2>
+                                </div>
+                                {note.data.description && (
+                                    <p class="mt-2 text-sm text-black/50 dark:text-white/50 line-clamp-2 ml-0 sm:ml-[68px]">
+                                        {note.data.description}
+                                    </p>
+                                )}
+                            </a>
+                        </div>
+                    );
+                })}
+            </div>
+            <div class="mt-8"><Pagination page={page}></Pagination></div>
+        </div>
+    </div>
+</GridLayout>
+```
+
+### 2. 正文详情页：`src/pages/notes/[...slug].astro`
+
+> 核心是修改顶部的 `getStaticPaths` 以剥离后缀，以及手动拼接当前页面的 URL。
+
+```astro
+---
+// ... (保留你原来的依赖引入，如 Icon, render, getCollection, formatDateToYYYYMMDD, Markdown 等) ...
+
+export async function getStaticPaths() {
+    // 抓取 notes 集合
+    const noteEntries = await getCollection("notes"); // <-- 记得改集合名称
+    
+    return noteEntries.map(entry => {
+        // [关键] 移除文件后缀，生成纯净的 slug 路径
+        const slug = entry.id.replace(/\.[^/.]+$/, "");
+        return {
+            params: { slug }, // 生成 /notes/[slug]/ 路由
+            props: { entry },
+        };
+    });
+}
+
+const { entry } = Astro.props;
+// ... (保留原来的 Content 渲染、字数统计等逻辑) ...
+
+// [关键] 手动拼接 URL 供元数据组件使用，防止组件自动加上 /posts/ 路径
+const currentNoteUrl = `/notes/${entry.id.replace(/\.[^/.]+$/, "")}/`;
+---
+
+```
+
+---
+
+## 🧭 第四步：添加入口 (导航栏)
+
+**目标**：让网站顶部导航栏出现新板块的入口按钮。
+**操作文件**：项目配置文件（如 `twilight.config.yaml` 或类似的全局配置项）
+
+找到导航栏数组配置，增加一项：
+
+```yaml
+nav:
+  # ... 原有的主页、归档等
+  - name: "随笔"
+    url: "/notes/"    # ⚠️ 关键：末尾必须带斜杠，防止开启 trailingSlash: always 时报 404
+    icon: "material-symbols:notes-rounded"
+```
+
+---
+
+## 🚀 第五步：推送与部署
+
+**操作位置**：终端 (Terminal)
+
+检查无误后，通过 Git 推送代码以触发自动化部署：
+
+```bash
+git add .
+git commit -m "feat: add independent notes section"
+git push
+```
+
+✅ **最终验收**：
+线上部署完成后，访问 `https://你的域名/notes/`。如果能看到带时间线的列表，且点击文章后 URL 格式为 `/notes/你的文章名/`，即代表成功！
