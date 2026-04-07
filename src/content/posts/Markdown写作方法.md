@@ -1,11 +1,22 @@
 ---
-title: 'Markdown写作方法'
-description: '这里写一段关于本文的简短描述'
+title: 'Markdown语法'
 published: '2026-04-07'
+pinned: true
+description: '关于Markdown的语法学习'
 cover: 'https://t.alcy.cc/pc'
-tags: ["Astro", "blog"]
+tags: ["Markdown", "blog"]
+category: Examples
+draft: false
 ---
-
+<!-- ---
+title: Mermaid Example
+published: 2011-11-02
+pinned: false
+description: A simple example of a Markdown blog post with Mermaid.
+tags: [Markdown, Mermaid]
+category: Examples
+draft: false
+--- -->
 
 # Markdown学习
 ## 标题和文本
