@@ -334,7 +334,7 @@ post:
         # Twikoo 评论系统配置
         twikoo:
             # 环境 ID
-            envId: "https://twikoo.vercel.app"
+            envId: "https://twikoo-theta-taupe.vercel.app/"
             # 语言
             lang: "en"
 
