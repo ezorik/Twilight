@@ -54,6 +54,30 @@ content:
       - { name: draft, label: Draft, type: boolean, required: false }
       - { name: body, label: Body, type: rich-text, required: true }
 
+  # 文章
+  - type: collection
+    # 集合名称
+    name: notes
+    # 后台显示标签
+    label: Notes
+    # 内容存储目录
+    path: src/content/notes
+    # 是否支持子文件夹
+    subfolders: true
+    # 文件命名规则
+    filename: "{slug}.md"
+    # 字段列表
+    fields:
+      - { name: title, label: Title, type: string }
+      - { name: published, label: Published Date, type: date }
+      - { name: updated, label: Updated Date, type: date, required: false }
+      - { name: description, label: Description, type: text, required: false }
+      - { name: cover, label: Cover, type: image, options: {media: posts}, required: false }
+      - { name: category, label: Category, type: string, list: true, required: false }
+      - { name: tags, label: Tags, type: string, list: true, required: false }
+      - { name: draft, label: Draft, type: boolean, required: false }
+      - { name: body, label: Body, type: rich-text, required: true }
+
   # 日记
   - type: collection
     # 集合名称
